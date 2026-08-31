@@ -1,12 +1,4 @@
-Yes. I went through the README you uploaded. There are several **real inconsistencies**, not just formatting problems. For example, it calls the backend FastAPI in the opening/architecture, but the configuration later uses `FLASK_DEBUG`, and the dependency/setup instructions mix several different assumptions.  
 
-The current README also claims things such as Docker + Redis + Nginx, multi-step agentic execution, and production readiness that aren't consistently reflected in the rest of the documentation. 
-
-I would **not patch the existing README line-by-line**. It has accumulated too much stale/generated documentation. I'd replace it with a shorter, cleaner README that describes what PRISM actually is and gives a reliable path to running it.
-
-Here is the version I'd use:
-
-````markdown
 # PRISM
 ### Privacy-Preserving Vision Agent
 
