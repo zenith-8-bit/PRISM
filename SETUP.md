@@ -1,442 +1,505 @@
-# Installation & Setup Guide
+# PRISM Setup Guide
 
-Complete step-by-step guide to get the Privacy-Preserving Vision Agent running.
+Complete step-by-step instructions to get PRISM running locally.
 
 ## Prerequisites
 
-- **Python 3.11+**
-- **Chrome or Chromium browser**
-- **ONNX model file** (`ui-yolov8n.onnx`)
-- **Anthropic API key** (get at https://console.anthropic.com)
+Before starting, ensure you have:
+
+- **Python 3.11+** - [Download](https://www.python.org/downloads/)
+- **Chrome or Chromium browser** - Latest version
+- **Ollama** - [Download](https://ollama.ai)
+- **Docker & Docker Compose** (optional, for containerized setup)
 - **Git** (optional, for cloning)
-
-## Step 1: Backend Setup (Python Server)
-
-### 1.1 Clone or Extract Project
-
-```bash
-# If you have the project as a zip
-unzip privacy-vision-agent.zip
-cd privacy-vision-agent
-
-# Or clone from git (if available)
-# git clone https://github.com/user/privacy-vision-agent.git
-```
-
-### 1.2 Create Python Virtual Environment
-
-**On macOS/Linux:**
-```bash
-python3.11 -m venv venv
-source venv/bin/activate
-```
-
-**On Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 1.3 Install Dependencies
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-This installs:
-- Flask + Flask-CORS + Flask-SocketIO (web server)
-- Anthropic SDK (AI/Claude API)
-- Pillow (image processing)
-- python-dotenv (configuration)
-
-### 1.4 Configure Environment
-
-```bash
-# Copy the example to create your config
-cp .env.example .env
-
-# Edit .env with your settings
-nano .env  # or use your preferred editor
-```
-
-**Required settings in .env:**
-```
-ANTHROPIC_API_KEY=sk-...your-key-here...
-FLASK_DEBUG=false
-PORT=8000
-```
-
-Get your API key:
-1. Visit https://console.anthropic.com
-2. Create an account or login
-3. Go to API keys
-4. Click "Create API key"
-5. Copy and paste into .env
-
-### 1.5 Verify Installation
-
-```bash
-# Test Python installation
-python --version  # Should be 3.11+
-
-# Test imports
-python -c "import flask, anthropic; print('✓ Dependencies OK')"
-
-# Test backend startup (will run until you Ctrl+C)
-python server.py
-```
-
-Expected output:
-```
-╔════════════════════════════════════════════════════════╗
-║   Privacy-Preserving Vision Agent Backend              ║
-║   http://localhost:8000                                 ║
-║   WebSocket: ws://localhost:8000                        ║
-╚════════════════════════════════════════════════════════╝
-```
-
-If successful, keep the server running and proceed to Step 2.
 
 ---
 
-## Step 2: Chrome Extension Setup
+## Part 1: Install and Configure Ollama
 
-### 2.1 Prepare Extension Files
+### Step 1.1: Install Ollama
 
-Extension files should be in `client-extension-updated/`:
-```
-client-extension-updated/
-├── manifest.json
-├── background.js
-├── content.js
-├── sidepanel.js
-├── sidepanel.html
-├── theme.css
-├── lib/
-│   ├── backendConnector.js
-│   ├── config.js
-│   ├── domScanner.js
-│   ├── visualLayer/
-│   │   ├── models/
-│   │   │   └── ui-yolov8n.onnx  ← CRITICAL: Add your ONNX model here
-│   │   ├── uiElementDetector.js
-│   │   └── ... (other visual layer files)
-│   └── ... (other lib files)
-└── ... (other files)
-```
+1. Visit https://ollama.ai
+2. Download and install for your OS (macOS, Linux, Windows)
+3. Follow installation wizard
 
-### 2.2 Add ONNX Model
+### Step 1.2: Pull Qwen 2.5 7B Model
 
-**Important**: The extension won't work without the ONNX model.
+Open a terminal and run:
 
-If you trained your own model:
 ```bash
-# From the training directory
-python export_to_onnx.py
+# Pull the Qwen model (first run downloads ~5GB)
+ollama pull qwen2.5:7b
 
-# This outputs: ui-yolov8n.onnx
-# Copy to: client-extension-updated/lib/visualLayer/models/
-```
+# This may take 5-15 minutes depending on internet speed
+Step 1.3: Verify Ollama is Running
+Start the Ollama server in a terminal:
 
-If using a pre-trained model, place it at:
-```
-client-extension-updated/lib/visualLayer/models/ui-yolov8n.onnx
-```
+bash
+ollama serve
+Expected output:
 
-Verify the file exists and is ~25-40 MB:
-```bash
-ls -lh client-extension-updated/lib/visualLayer/models/ui-yolov8n.onnx
-```
+Code
+time=2024-01-15T10:00:00.000Z level=INFO msg="Listening on 127.0.0.1:11434"
+Keep this terminal open while using PRISM. It needs to run continuously.
 
-### 2.3 Load Extension in Chrome
+Part 2: Backend Setup (Python)
+Step 2.1: Clone or Extract Project
+If you have a ZIP file:
 
-1. **Open Chrome Extensions Page**
-   ```
-   chrome://extensions/
-   ```
+bash
+unzip PRISM.zip
+cd PRISM
+If cloning from Git:
 
-2. **Enable Developer Mode**
-   - Toggle the switch in top-right corner
+bash
+git clone https://github.com/zenith-8-bit/PRISM.git
+cd PRISM
+Step 2.2: Create Python Virtual Environment
+On macOS/Linux:
 
-3. **Load Unpacked Extension**
-   - Click "Load unpacked"
-   - Navigate to `client-extension-updated/` directory
-   - Click "Select Folder"
+bash
+python3.11 -m venv venv
+source venv/bin/activate
+On Windows:
 
-4. **Grant Permissions**
-   - Extension will ask for permissions
-   - Click "Allow" for all requested permissions
+bash
+python -m venv venv
+venv\Scripts\activate
+You should see (venv) in your terminal prompt.
 
-5. **Verify Installation**
-   - Extension should appear in your extensions list
-   - Click extension icon in toolbar to verify
+Step 2.3: Install Python Dependencies
+bash
+# Upgrade pip first
+pip install --upgrade pip
 
-### 2.4 Configure Extension (Optional)
+# Install from requirements.txt
+pip install -r requirements.txt
+This installs:
 
-Edit `client-extension-updated/lib/config.js`:
-```js
+Flask & Flask-CORS (web framework)
+Flask-Sock (WebSocket support)
+python-dotenv (environment configuration)
+Pillow (image processing)
+Requests (HTTP client)
+Step 2.4: Configure Environment
+Create .env file from template:
+
+bash
+cp .env.example .env
+Edit .env with your settings:
+
+bash
+# Ollama Configuration
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:7b
+
+# Server Configuration
+FLASK_DEBUG=false
+PORT=8000
+HOST=0.0.0.0
+
+# Backend URLs (for extension to connect)
+BACKEND_URL=http://localhost:8000
+WS_URL=ws://localhost:8000
+
+# PII Redaction Settings
+WARN_ON_PII=true
+ALWAYS_REDACT_EMAILS=true
+
+# Inference Tuning (lower temperature = more deterministic)
+QWEN_TEMPERATURE=0.2
+QWEN_TOP_P=0.9
+QWEN_TOP_K=40
+Step 2.5: Test Backend Startup
+bash
+python server.py
+Expected output:
+
+Code
+╔════════════════════════════════════════════════════════╗
+║   Privacy-Preserving Vision Agent Backend (OPTIMIZED)  ║
+║   http://localhost:8000                                 ║
+║   WebSocket: ws://localhost:8000                        ║
+║   Model: qwen2.5:7b                                     ║
+║   Streaming: Enabled                                    ║
+╚════════════════════════════════════════════════════════╝
+Keep this running! Open a new terminal for the next steps.
+
+Part 3: Chrome Extension Setup
+Step 3.1: Verify Extension Directory
+The extension is in the ext2/ folder:
+
+bash
+ls ext2/manifest.json  # Should exist
+ls ext2/sidepanel.html
+ls ext2/background.js
+Step 3.2: Load Extension in Chrome
+Open Chrome
+
+Code
+chrome://extensions/
+Enable Developer Mode
+
+Toggle "Developer mode" switch in top-right corner
+Load Unpacked Extension
+
+Click "Load unpacked"
+Navigate to project directory
+Select the ext2/ folder
+Click "Select Folder"
+Grant Permissions
+
+Extension will request permissions
+Click "Allow" to approve
+Verify Installation
+
+Extension should appear in your extensions list
+Click extension icon in toolbar
+You should see the PRISM side panel icon
+Step 3.3: Configure Extension (Optional)
+Edit ext2/lib/config.js to customize:
+
+js
 export const CONFIG = {
-  DEBUG: true,  // Set to true to see console logs
+  DEBUG: true,              // Enable console logging
   SERVER_URL: "http://localhost:8000",
   BACKEND_URL: "http://localhost:8000",
   WS_URL: "ws://localhost:8000",
   MIN_INFERENCE_INTERVAL_MS: 1000,
+  REDACTION_STYLE: "blur",  // "blur" or "black"
 };
-```
+Part 4: Test the System
+Step 4.1: Verify All Services Are Running
+Open 3 terminals:
 
----
+Terminal 1 (Ollama):
 
-## Step 3: Test the System
+bash
+ollama serve
+# Keep running
+Terminal 2 (Backend):
 
-### 3.1 Start Backend (if not already running)
-
-**Terminal 1:**
-```bash
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+bash
+cd PRISM
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 python server.py
-```
+# Keep running
+Terminal 3 (For testing):
 
-Expected:
-```
- * Running on http://0.0.0.0:8000
-```
+bash
+# Use for curl commands or general tasks
+cd PRISM
+Step 4.2: Health Check
+From Terminal 3, verify backend is responsive:
 
-### 3.2 Open Extension Side Panel
+bash
+curl http://localhost:8000/api/health
+Expected response:
 
-1. Click extension icon in Chrome toolbar
-2. Select "Open side panel" (or it opens automatically)
-3. You should see the chat interface
+JSON
+{
+  "status": "ok",
+  "model": "qwen2.5:7b",
+  "timestamp": "2024-01-15T10:30:00.000000"
+}
+If this fails:
 
-### 3.3 Test Basic Functionality
+Verify Ollama is running: curl http://localhost:11434/api/tags
+Verify port 8000 is available: lsof -i :8000
+Check .env file has correct OLLAMA_URL
+Step 4.3: Test Extension Connection
+Open any website (Google, Wikipedia, Amazon, etc.)
 
-1. **Navigate to any website** (e.g., Google, Amazon, Wikipedia)
+Click extension icon in Chrome toolbar
 
-2. **Send a test message**:
-   ```
-   What's visible on this page?
-   ```
+You should see the PRISM side panel open on the right
+Send a test message
 
-3. **Expected response**:
-   - Extension captures the page
-   - Backend analyzes it
-   - AI responds with description of visible content
+Code
+What's visible on this page?
+Watch the response
 
-4. **Try an action**:
-   ```
-   What color is the background?
-   ```
-   or
-   ```
-   Click the first link
-   ```
+Side panel shows: [Processing...]
+Backend analyzes DOM
+AI responds with description
+Try an action query
 
-### 3.4 Check Logs
+Code
+Click the search box
+Extension finds search element
+Backend plans action
+Element gets clicked
+Step 4.4: Check Logs
+Backend logs (in Terminal 2 running python server.py):
 
-**Browser Console** (for extension logs):
-1. Right-click extension icon → "Inspect"
-2. Go to "Application" tab → "Service Workers"
-3. Look for console logs
+Code
+POST /api/chat
+- session_id: user-session-123
+- message: "What's visible on this page?"
+- UI elements found: 24
+- Response: "This page shows..."
+Extension logs:
 
-**Terminal Output** (for backend logs):
-1. Watch the terminal where you ran `python server.py`
-2. You should see WebSocket connections and API requests
+Right-click extension icon → "Inspect"
+Go to "Application" tab → "Service Workers"
+Look for console output
+Part 5: Add ONNX Model (Optional)
+The extension can detect UI elements using a YOLOv8n ONNX model. Without it, it still works but won't detect specific UI elements.
 
----
+Option A: Use Dummy Model (Testing Only)
+bash
+# Create empty placeholder
+mkdir -p ext2/lib/visualLayer/models
+touch ext2/lib/visualLayer/models/ui-yolov8n.onnx
+The system will gracefully handle missing model.
 
-## Step 4: Add Your ONNX Model (Important)
-
-### Option A: Train Your Own Model
-
-```bash
+Option B: Train Your Own Model
+bash
+# From the training directory
 cd training
 
-# 1. Download dataset to datasets/
-# Visit https://roboflow.com for UI element datasets
-# Download in YOLO format
+# 1. Download dataset to datasets/ folder
+#    Visit https://roboflow.com for UI element datasets
+#    Download in YOLO format
 
 # 2. Train the model
 python train_ui_yolov8n.py
 
 # 3. Export to ONNX
 python export_to_onnx.py
-# Output: ../lib/visualLayer/models/ui-yolov8n.onnx
-```
+# Automatically copies to: ../ext2/lib/visualLayer/models/ui-yolov8n.onnx
 
-### Option B: Use Pre-trained Model
-
-1. Download a YOLOv8n ONNX model trained on UI elements
-2. Place at: `client-extension-updated/lib/visualLayer/models/ui-yolov8n.onnx`
-3. Verify file size (should be 20-50 MB)
-
-### Option C: Dummy Model (Testing Only)
-
-For testing without real detection:
-```bash
-# Create empty placeholder (will fail gracefully)
-touch client-extension-updated/lib/visualLayer/models/ui-yolov8n.onnx
-```
-
----
-
-## Step 5: Docker Deployment (Optional)
-
+# 4. Reload extension in Chrome
+# chrome://extensions → Reload button on PRISM
+Option C: Use Pre-trained Model
+Download a YOLOv8n model trained on UI elements
+Place at: ext2/lib/visualLayer/models/ui-yolov8n.onnx
+Verify file size (should be 20-50 MB)
+Part 6: Docker Deployment (Optional)
 For easier deployment without manual setup:
 
-### 5.1 Build and Run with Docker Compose
-
-```bash
-# Make sure Docker and Docker Compose are installed
+Step 6.1: Prerequisites
+bash
+# Verify Docker is installed
 docker --version
 docker-compose --version
 
-# Start all services
+# Should output version numbers, e.g., "Docker version 24.0.0"
+Step 6.2: Configure Environment
+Create .env file (if not already done):
+
+bash
+cp .env.example .env
+# Edit .env with your settings
+Step 6.3: Start Services
+bash
+# Build and start all services
 docker-compose up -d
 
 # View logs
 docker-compose logs -f backend
 
-# Stop services
+# To stop
 docker-compose down
-```
+This starts:
 
-### 5.2 Verify Docker Setup
+Backend: http://localhost:8000
+Redis: localhost:6379 (for session storage)
+Nginx: localhost:80 (optional reverse proxy)
+Step 6.4: Verify Docker Setup
+bash
+# Check if containers are running
+docker-compose ps
 
-```bash
-# Check if backend is running
+# Test backend
 curl http://localhost:8000/api/health
 
-# Should respond:
-# {"status":"ok","timestamp":"..."}
-```
+# View backend logs
+docker-compose logs backend
 
----
+# View all logs
+docker-compose logs -f
+Common Issues & Solutions
+Issue 1: "OLLAMA_URL refused connection"
+Symptom: Backend crashes on startup with connection refused error
 
-## Common Issues & Troubleshooting
+Solution:
 
-### Issue 1: "Extension can't reach backend"
+Verify Ollama is running: ollama serve in separate terminal
+Check OLLAMA_URL in .env is http://localhost:11434
+Verify port 11434 isn't blocked by firewall
+Restart backend: python server.py
+Issue 2: "Connection refused: http://localhost:8000"
+Symptom: Extension says can't reach backend
 
-**Symptom**: Chat sends message but no response
+Solution:
 
-**Solution**:
-1. Verify backend is running: `curl http://localhost:8000/api/health`
-2. Check manifest.json has `http://localhost:8000/*` in host_permissions
-3. Restart extension: Right-click extension → "Reload"
+Verify backend is running: curl http://localhost:8000/api/health
+Check manifest.json has http://localhost:8000/* in host_permissions
+Reload extension: chrome://extensions → Reload button
+Refresh the webpage
+Issue 3: "Port 8000 already in use"
+Symptom: Backend fails to start with "Address already in use"
 
-### Issue 2: "ANTHROPIC_API_KEY not found"
+Solution:
 
-**Symptom**: Backend crashes with API key error
+bash
+# Find what's using port 8000
+lsof -i :8000
 
-**Solution**:
-1. Verify .env file exists: `ls -la .env`
-2. Check it contains: `ANTHROPIC_API_KEY=sk-...`
-3. Restart backend: `python server.py`
+# Either:
+# 1. Kill the process: kill -9 <PID>
+# 2. Or change PORT in .env to 8001, update extension config
+Issue 4: "Model download stuck"
+Symptom: ollama pull qwen2.5:7b hangs or is very slow
 
-### Issue 3: "Model not loading"
+Solution:
 
-**Symptom**: No UI elements detected, console errors about ONNX
+Check internet connection
+Try canceling (Ctrl+C) and retry
+Model is ~5GB, may take 10-30 minutes on slower connections
+Verify disk space: df -h (need at least 10GB free)
+Issue 5: "No UI elements detected on page"
+Symptom: Extension loads but can't find buttons/inputs
 
-**Solution**:
-1. Verify ONNX file exists:
-   ```bash
-   ls -lh client-extension-updated/lib/visualLayer/models/ui-yolov8n.onnx
-   ```
-2. File should be >10 MB
-3. If not present, add it (see Step 4)
-4. Check browser console for detailed error
+Solution:
 
-### Issue 4: "WebSocket connection failed"
+This is normal without a trained ONNX model
+Check browser console for ONNX loading errors
+Verify model file exists: ls -lh ext2/lib/visualLayer/models/ui-yolov8n.onnx
+Try with simple HTML pages first (not complex SPAs)
+Train your own model (see Part 5)
+Issue 6: "WebSocket connection failed"
+Symptom: Red status indicator in side panel, messages don't send
 
-**Symptom**: Red status indicator in side panel
+Solution:
 
-**Solution**:
-1. Restart backend
-2. Check firewall allows localhost:8000
-3. Verify WS_URL in config.js
-4. Try refreshing extension
+Verify backend is running
+Check WS_URL in ext2/lib/config.js is ws://localhost:8000
+Verify port 8000 is accessible: curl http://localhost:8000/api/health
+Reload extension and refresh webpage
+Check browser console for network errors
+Issue 7: "Python version error"
+Symptom: ModuleNotFoundError or Python version complaints
 
-### Issue 5: "Permission denied" when starting backend
+Solution:
 
-**Symptom**: `OSError: [Errno 13] Permission denied: ':8000'`
+bash
+# Check Python version
+python --version
+# Should be 3.11 or higher
 
-**Solution**:
-1. Port 8000 might be in use: `lsof -i :8000`
-2. Change PORT in .env to available port (e.g., 8001)
-3. Update extension config to match
+# Create venv with correct Python
+python3.11 -m venv venv
 
-### Issue 6: "No UI elements detected" on web pages
+# Activate and reinstall
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+Verification Checklist
+Work through this to ensure everything is set up correctly:
 
-**Symptom**: Extension loads but can't find buttons/inputs
+ Python 3.11+ installed: python --version
+ Ollama installed and running: ollama serve
+ Qwen model pulled: ollama list
+ Virtual environment created: source venv/bin/activate
+ Dependencies installed: pip list | grep Flask
+ .env file created with correct OLLAMA_URL
+ Backend runs without errors: python server.py
+ Backend responds to health check: curl http://localhost:8000/api/health
+ Extension loads in Chrome: chrome://extensions
+ Extension side panel opens: Click extension icon
+ Test message sends and receives response
+ Backend logs show incoming requests
+Next Steps
+For Testing
+Try different websites (Google, Amazon, Wikipedia, banking sites)
+Test various queries:
+Informational: "What's on this page?"
+Actionable: "Click the first link"
+Complex: "Fill this form and submit"
+Watch backend logs to understand flow
+For Development
+Enable DEBUG mode in ext2/lib/config.js
+Inspect extension logs: Right-click → Inspect
+Modify server.py for custom behavior
+Experiment with Qwen prompt engineering
+Train custom ONNX model on your UI styles
+For Production
+Set FLASK_DEBUG=false in .env
+Use HTTPS with reverse proxy (Nginx)
+Deploy backend to cloud platform (AWS, Railway, Render, etc.)
+Use Redis for session persistence
+Set up monitoring and error tracking
+Implement rate limiting on API endpoints
+Helpful Commands
+bash
+# Check if services are running
+ps aux | grep "ollama\|python server"
 
-**Solution**:
-1. This is normal until model is trained
-2. Check browser console for ONNX loading errors
-3. Verify model file and format
-4. Try with a simple test page (not complex SPAs)
+# Check port availability
+lsof -i :11434  # Ollama
+lsof -i :8000   # Backend
 
----
+# Test backend endpoints
+curl http://localhost:8000/api/health
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"test","message":"hi","screen_state":{}}'
 
-## Verification Checklist
+# View backend logs
+tail -f server.log
 
-- [ ] Python 3.11+ installed
-- [ ] Virtual environment created and activated
-- [ ] Dependencies installed (`pip list` shows flask, anthropic, etc.)
-- [ ] .env file created with ANTHROPIC_API_KEY
-- [ ] Backend runs without errors: `python server.py`
-- [ ] Extension loads in Chrome (visible in extensions page)
-- [ ] ONNX model file exists at correct path
-- [ ] Side panel opens when clicking extension icon
-- [ ] Test message sends and receives response
-- [ ] Action execution works (clicking, filling forms)
+# Reload extension in Chrome (from terminal)
+chrome-extension://[extension-id]/  # Copy from chrome://extensions
 
----
+# Kill process on port
+kill -9 $(lsof -t -i :8000)
 
-## Next Steps
+# View Docker logs
+docker-compose logs -f backend
+docker-compose logs -f redis
+docker-compose logs -f nginx
+Getting Help
+Check logs first:
 
-### For Development
+Backend: Terminal output from python server.py
+Extension: Right-click extension → Inspect → Console
+Ollama: Terminal output from ollama serve
+Read the docs:
 
-- Modify `lib/config.js` to enable debug logging
-- Check `server.py` for backend customization
-- Train your own ONNX model on your UI patterns (see `training/train_ui_yolov8n.py`)
-- Extend action types in `content.js` for more complex automation
+README.md: Architecture and features
+ext2/README.md: Extension details
+ext2/lib/visualLayer/README.md: UI detection specifics
+Debug systematically:
 
-### For Deployment
+Verify Ollama is running
+Verify backend responds: curl http://localhost:8000/api/health
+Verify extension can reach backend
+Check browser console for JavaScript errors
+Restart all services if stuck
+Performance Tips
+Optimize Backend Speed
+bash
+# In .env
+QWEN_TEMPERATURE=0.1          # Lower = faster, more deterministic
+STREAM_RESPONSES=true          # Stream responses for perceived speed
+MIN_INFERENCE_INTERVAL_MS=1000 # Debounce rapid requests
+Optimize Extension Speed
+js
+// In ext2/lib/config.js
+CONFIG.MIN_INFERENCE_INTERVAL_MS = 2000  // Reduce inference frequency
+CONFIG.DEBUG = false                      // Disable logging overhead
+Monitor Resource Usage
+bash
+# Watch Ollama memory usage
+watch -n 1 'ps aux | grep ollama'
 
-- Set `FLASK_DEBUG=false` in .env
-- Use HTTPS (set up with Nginx reverse proxy or cloud platform)
-- Store sessions in Redis or database (update SESSION_STORAGE in .env)
-- Set up monitoring and alerts
-- Use environment secrets for API keys (not in .env)
+# Watch backend CPU/memory
+watch -n 1 'ps aux | grep python'
 
-### For Production
-
-- Deploy backend to cloud (Render, Railway, AWS, etc.)
-- Use domain name instead of localhost
-- Implement rate limiting and authentication
-- Set up logs and error tracking
-- Monitor WebSocket connections
-
----
-
-## Getting Help
-
-1. **Check logs**:
-   - Backend: Terminal output where you ran `python server.py`
-   - Extension: Right-click extension → Inspect → Console tab
-   - Side Panel: Right-click → Inspect
-
-2. **Read documentation**:
-   - README.md: Architecture and features
-   - API Reference section in README
-   - Code comments in key files
-
-3. **Debug step by step**:
-   - Verify each step completed successfully
-   - Use curl to test backend endpoints
-   - Use browser DevTools to inspect network requests
-
----
-
-**Congratulations! Your Privacy-Preserving Vision Agent is ready to use!** 🎉
-
-For detailed usage and examples, see the README.md file.
+# Check available memory
+free -h  # Linux
+vm_stat # macOS
+Get-ComputerInfo | Select-Object CsPhyicallyInstalledMemory # Windows
+You're all set! Start automating with PRISM. 🎉
