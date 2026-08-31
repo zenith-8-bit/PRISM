@@ -17,3 +17,5 @@ datasets/
 # Documentation excluded from submission
 PROJECT_STRUCTURE.md
 QUICKSTART.md
+client-extension/
+ext1/
