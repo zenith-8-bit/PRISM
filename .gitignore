@@ -1,0 +1,19 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# Datasets
+dataset/
+datasets/
+
+# Archives
+*.zip
+
+# Documentation excluded from submission
+PROJECT_STRUCTURE.md
+QUICKSTART.md

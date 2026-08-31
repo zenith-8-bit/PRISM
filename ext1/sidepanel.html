@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Privacy Vision Agent</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-strip">
+        <span class="side-strip__mark" aria-hidden="true"></span>
+        <span class="side-strip__label">SYSTEM&nbsp;01&nbsp;/&nbsp;LOCAL&nbsp;INFERENCE</span>
+        <span class="side-strip__mark" aria-hidden="true"></span>
+      </aside>
+
+      <header>
+        <div class="eyebrow">
+          <span>FIG. 01 — ON-DEVICE AGENT</span>
+          <span id="clock">00:00:00</span>
+        </div>
+        <h1>PRIVACY<br />VISION<span>.</span>AGENT</h1>
+        <div class="rule" id="headerRule"></div>
+      </header>
+
+      <div class="auth-bar" id="authBar">
+        <!-- populated by sidepanel.js: signed-out state shows a "Sign in
+             with Google" button; signed-in state shows avatar + name. -->
+      </div>
+
+      <section class="accordion" id="logAccordion">
+        <button class="accordion-toggle" id="logToggle" aria-expanded="false">
+          <span>Redacted regions log</span>
+          <span class="accordion-toggle__count" id="logCount">0</span>
+          <span class="accordion-toggle__chevron">▸</span>
+        </button>
+        <div class="accordion-body scrollpane" id="logBody">
+          <span class="log-empty">Nothing redacted yet this session.</span>
+        </div>
+      </section>
+
+      <div class="chat-thread scrollpane" id="chatThread">
+        <div class="bubble bubble--system">Session started. Ask me to do something on this page.</div>
+      </div>
+
+      <form class="composer" id="composer">
+        <textarea
+          id="task"
+          placeholder="e.g. find the submit button and click it — press ⌘/Ctrl+Enter to send"
+        ></textarea>
+        <button type="submit" class="btn btn-primary" id="send">Send →</button>
+      </form>
+
+      <div class="toast-root" id="toastRoot"></div>
+    </div>
+
+    <!-- Firebase compat SDK — vendored locally, see lib/vendor/README.md.
+         (MV3's CSP forbids loading these from a CDN <script src>.) -->
+    <script src="lib/vendor/firebase-app-compat.js"></script>
+    <script src="lib/vendor/firebase-auth-compat.js"></script>
+    <script src="lib/vendor/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

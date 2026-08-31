@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": " PRISM - Privacy-Preserving Vision Agent",
+  "version": "0.3.0",
+  "description": "Local vision + DOM redaction agent with agentic AI backend integration. Only sanitized, PII-free context ever leaves the browser.",
+  
+"permissions": [
+  "activeTab",
+  "scripting",
+  "storage",
+  "tabs",
+  "sidePanel",
+  "identity",
+  "offscreen"
+],
+
+"host_permissions": [
+  "<all_urls>",
+  "http://localhost:8000/*",
+  "http://localhost:8787/*",
+  "http://localhost:2000/*",
+  "ws://localhost:8000/*",
+  "ws://localhost:2000/*",
+  "https://identitytoolkit.googleapis.com/*",
+  "https://securetoken.googleapis.com/*",
+  "https://firestore.googleapis.com/*",
+  "https://www.googleapis.com/*"
+],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  
+  "action": {
+    "default_title": "Open Privacy Vision Agent"
+  },
+  
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "lib/*",
+        "lib/visualLayer/*",
+        "lib/visualLayer/models/*",
+        "lib/pii/*",
+        "lib/vendor/*",
+        "lib/vendor/onnxruntime-web/*",
+        "lib/vendor/onnxruntime-web/dist/*",
+        "lib/vendor/tesseract/*",
+        "lib/vendor/tesseract/dist/*",
+        "lib/vendor/tesseract/core/*"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "oauth2": {
+    "client_id": "REPLACE_WITH_YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": ["openid", "email", "profile"]
+  }
+}
