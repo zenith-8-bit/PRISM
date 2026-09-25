@@ -698,7 +698,8 @@ PRISM follows one central architectural principle:
                    │
                    ▼
             AI REASONING
-```
+
+---
 
 **Privacy is enforced before reasoning begins.**
 
@@ -707,9 +708,7 @@ PRISM follows one central architectural principle:
 # License
 
 This project contains multiple components with their own dependencies and licenses.
-
 Check the license terms of:
-
 * YOLO / Ultralytics components
 * Tesseract / OCR components
 * ONNX Runtime
@@ -717,7 +716,6 @@ Check the license terms of:
 * Qwen
 * Ollama
 * Other third-party dependencies
-
 ---
 
 # Team
